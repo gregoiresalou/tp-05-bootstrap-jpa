@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  demo-data-access — projet unique du module « Java · Accès aux données ».
+
+  Un SEUL projet pour les 14 TP : il grandit de séance en séance. Le chapitre 1
+  n'utilise que JDBC + HikariCP ; le chapitre 2 ajoute Hibernate ; le chapitre 4
+  ajoute Testcontainers et Flyway. Toutes les dépendances sont déclarées dès le
+  départ pour éviter 14 manipulations de pom, mais l'ORDRE d'apparition est
+  commenté : à chaque TP, vous devez savoir POURQUOI une dépendance est là.
+
+  Versions figées et vérifiées en septembre 2026. Aucune version n'est laissée à
+  la résolution automatique : une build reproductible est une build dont les
+  versions sont écrites.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.sebsy</groupId>
+  <artifactId>demo-data-access</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>jar</packaging>
+  <name>demo-data-access</name>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.release>25</maven.compiler.release>
+
+    <hibernate.version>7.4.11.Final</hibernate.version>
+    <mariadb.version>3.5.10</mariadb.version>
+    <hikari.version>7.1.0</hikari.version>
+    <slf4j.version>2.0.20</slf4j.version>
+    <logback.version>1.6.4</logback.version>
+    <junit.version>6.1.3</junit.version>
+    <assertj.version>3.27.7</assertj.version>
+    <!-- Testcontainers 2.x : les modules ont été renommés en `testcontainers-<module>`
+         et les classes de conteneurs ont quitté le paquet org.testcontainers.containers.
+         Les tutoriels antérieurs à 2.0 ne compileront pas tels quels. -->
+    <testcontainers.version>2.0.5</testcontainers.version>
+    <flyway.version>13.8.1</flyway.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- BOM JUnit : aligne junit-jupiter, junit-platform et leurs transitifs. -->
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>${junit.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <!-- BOM Testcontainers : une seule version pour le cœur et les modules. -->
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>testcontainers-bom</artifactId>
+        <version>${testcontainers.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <!-- ══ Chapitre 1 — JDBC ═════════════════════════════════════════════════ -->
+
+    <!-- Le pilote. L'API JDBC elle-même est dans le JDK : rien à déclarer pour elle.
+         C'est TOUTE la démonstration du chapitre 1 sur « API vs implémentation ». -->
+    <dependency>
+      <groupId>org.mariadb.jdbc</groupId>
+      <artifactId>mariadb-java-client</artifactId>
+      <version>${mariadb.version}</version>
+    </dependency>
+
+    <!-- Pool de connexions. Sans lui, DriverManager ouvre une connexion par appel. -->
+    <dependency>
+      <groupId>com.zaxxer</groupId>
+      <artifactId>HikariCP</artifactId>
+      <version>${hikari.version}</version>
+    </dependency>
+
+    <!-- Journalisation. Non négociable : sans logs, le chapitre 4 est aveugle.
+         SLF4J est l'API, Logback l'implémentation — même schéma que JDBC. -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>${logback.version}</version>
+    </dependency>
+
+    <!-- ══ Chapitre 2 — JPA / Hibernate ══════════════════════════════════════ -->
+
+    <!-- Hibernate ORM. Il apporte jakarta.persistence-api en transitif : on ne
+         déclare donc pas l'API séparément (une seule source de vérité de version). -->
+    <dependency>
+      <groupId>org.hibernate.orm</groupId>
+      <artifactId>hibernate-core</artifactId>
+      <version>${hibernate.version}</version>
+    </dependency>
+
+    <!-- Intégration du pool : Hibernate délègue la gestion des connexions à HikariCP,
+         exactement le même que celui du chapitre 1. -->
+    <dependency>
+      <groupId>org.hibernate.orm</groupId>
+      <artifactId>hibernate-hikaricp</artifactId>
+      <version>${hibernate.version}</version>
+    </dependency>
+
+    <!-- ══ Chapitre 4 — tests & migrations ═══════════════════════════════════ -->
+
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-core</artifactId>
+      <version>${flyway.version}</version>
+    </dependency>
+    <!-- Support du dialecte MySQL/MariaDB : séparé du cœur depuis Flyway 10. -->
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-mysql</artifactId>
+      <version>${flyway.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>${assertj.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- Testcontainers : une vraie MariaDB, pas un H2 qui prétend l'être. -->
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>testcontainers-mariadb</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.16.0</version>
+        <configuration>
+          <!-- -parameters : les noms de paramètres survivent à la compilation.
+               Requis par les projections par constructeur et par Jakarta Data. -->
+          <compilerArgs>
+            <arg>-parameters</arg>
+          </compilerArgs>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.6.0</version>
+      </plugin>
+      <plugin>
+        <!-- mvn exec:java lance les programmes des TP : épinglé comme le reste. -->
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.6.4</version>
+      </plugin>
+    </plugins>
+  </build>
+</project>

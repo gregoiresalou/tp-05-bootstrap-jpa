@@ -1,0 +1,8 @@
+target/
+*.iml
+.idea/
+.vscode/
+# Aucun fichier d'identifiants ne doit exister ici. Les secrets vivent dans
+# l'environnement, pas dans le dépôt — un mot de passe commité une fois reste
+# dans l'historique Git pour toujours.
+*.env

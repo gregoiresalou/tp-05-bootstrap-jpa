@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Journalisation de développement. Deux réglages font tout le travail pédagogique :
+    · org.hibernate.SQL       → le SQL généré
+    · …orm.jdbc.bind          → les VALEURS des paramètres liés, absentes de show_sql
+  En production : racine à WARN, et des métriques plutôt que des logs par requête.
+-->
+<configuration>
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%-5level %logger{28} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <root level="WARN">
+    <appender-ref ref="CONSOLE"/>
+  </root>
+
+  <!-- Le SQL généré par Hibernate. Passer à WARN pour retrouver un terminal lisible. -->
+  <logger name="org.hibernate.SQL" level="DEBUG"/>
+  <!-- Les paramètres liés. Décommenter quand une requête ne renvoie pas ce qu'on attend. -->
+  <!-- <logger name="org.hibernate.orm.jdbc.bind" level="TRACE"/> -->
+
+  <!-- HikariCP annonce la taille du pool et dénonce les fuites de connexion. -->
+  <logger name="com.zaxxer.hikari" level="INFO"/>
+</configuration>
