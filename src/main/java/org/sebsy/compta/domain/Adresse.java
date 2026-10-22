@@ -1,5 +1,6 @@
 package org.sebsy.compta.domain;
 
+import jakarta.persistence.Embeddable;
 import java.util.Objects;
 
 /**
@@ -11,6 +12,7 @@ import java.util.Objects;
  * <p>{@code rue} and {@code codePostal} are nullable (rows inherited from the SQL module do not
  * have them); {@code ville} is NOT NULL in the table, so it is mandatory here too.
  */
+@Embeddable
 public record Adresse(String rue, String codePostal, String ville) {
 
     public Adresse {

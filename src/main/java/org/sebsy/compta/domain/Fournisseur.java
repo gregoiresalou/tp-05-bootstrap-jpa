@@ -1,5 +1,13 @@
 package org.sebsy.compta.domain;
 
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import java.util.Objects;
 
 /**
@@ -9,10 +17,19 @@ import java.util.Objects;
  * The identifier is a {@code Long}: an unsaved supplier has none, which a {@code long} cannot
  * express.
  */
+@Entity
+@Table(name = "fournisseur")
 public class Fournisseur {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, length = 60, unique = true)
     private String nom;
+
+    @Embedded
+    @AttributeOverride(name = "codePostal", column = @Column(name = "code_postal"))
     private Adresse adresse;
 
     protected Fournisseur() {

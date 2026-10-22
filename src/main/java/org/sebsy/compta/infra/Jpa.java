@@ -18,6 +18,10 @@ public final class Jpa {
                     .jdbcUrl(Env.required("DB_URL"))
                     .jdbcUsername(Env.required("DB_USER"))
                     .jdbcPassword(Env.required("DB_PASSWORD"))
+                    // Transmis directement à HikariCP : sans cela, le pilote peut recevoir
+                    // le nom de la session Windows à la place de DB_USER.
+                    .property("hibernate.hikari.username", Env.required("DB_USER"))
+                    .property("hibernate.hikari.password", Env.required("DB_PASSWORD"))
                     .jdbcPoolSize(10)
                     .schemaToolingAction(Action.VALIDATE)
                     .property("hibernate.generate_statistics", true)

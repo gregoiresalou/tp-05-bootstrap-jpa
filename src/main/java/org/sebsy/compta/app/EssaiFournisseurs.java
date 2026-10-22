@@ -22,7 +22,7 @@ public final class EssaiFournisseurs {
         System.out.println("parId(999)         : " + fournisseurs.parId(999));
         System.out.println("parVille(Nantes)   : " + fournisseurs.parVille("Nantes"));
 
-        Fournisseur cree = fournisseurs.creer(new Fournisseur("Peinture Express", Adresse.ville("Nantes")));
+        Fournisseur cree = fournisseurs.creer(new Fournisseur("Peinture Express", new Adresse(null, null, "Nantes")));
         System.out.println("creer()            : " + cree);
         System.out.println("renommer(cree)     : " + fournisseurs.renommer(cree.getId(), "Peinture Expresse"));
         System.out.println("renommer(999)      : " + fournisseurs.renommer(999, "X"));
