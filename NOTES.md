@@ -43,3 +43,16 @@ C'est la gestion des droits de la base de données. L'utilisateur MariaDB n'a pa
 
 **Que se serait-il passé avec un compte qui a les droits ?**
 Hibernate aurait modifié la structure de la table directement en base. C'est extrêmement dangereux en production (risque d'écraser le schéma voulu par les DBA ou de causer des pertes de données).
+
+## 4 — Les portées
+
+**Dans une transaction :**
+- Les deux références sont identiques (`==` donne `true`).
+- Le nombre de requêtes préparées est de 1. Hibernate a utilisé son cache pour la deuxième lecture.
+
+**Dans deux transactions successives :**
+- Les références en mémoire sont différentes (`==` donne `false`), mais leur contenu est bien le même (`equals` donne `true`).
+- Le nombre de requêtes préparées est de 2. Hibernate a dû interroger la base de données deux fois car le cache de la première transaction n'existait plus.
+
+**Conclusion :**
+Le contexte de persistance est un cache de premier niveau géré par Hibernate qui stocke les entités pour éviter les requêtes SQL redondantes. Ici, on constate que sa durée de vie correspond exactement à celle de l'EntityManager (et donc à la transaction) : dès que l'EntityManager est fermé, son cache est vidé.
