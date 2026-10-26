@@ -1,0 +1,3 @@
+Petite info sur le commit : j'ai rajouté le dossier env pour faire ça au propre.
+
+En fait, au début mon code marchait juste parce que le Docker du TP1 tournait encore en fond. Du coup, j'ai préféré tout remettre directement dans ce projet pour qu'il soit complet et autonome.
