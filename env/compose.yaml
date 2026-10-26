@@ -1,0 +1,56 @@
+# Environnement de TP — Java · Accès aux données (SGBD-R)
+#
+# Trois services : le serveur MariaDB, un client web, et rien d'autre.
+# Tout est jetable : `docker compose down -v` remet l'environnement à zéro.
+#
+# Démarrage :   docker compose up -d
+# Adminer   :   http://localhost:8080   (serveur: db · utilisateur: root · mot de passe: root)
+# Client CLI:   docker compose exec db mariadb -uroot -proot compta
+#
+# Deux bases sont créées au premier démarrage :
+#   compta      → la base de TRAVAIL, celle que vos programmes Java attaquent.
+#   compta_ref  → une copie de référence, intacte. Sert à réinitialiser `compta`
+#                 sans détruire le conteneur (voir env/README.md).
+#
+# ATTENTION — les mots de passe en clair ci-dessous sont acceptables UNIQUEMENT parce que
+# ce service n'est joignable que depuis le poste de formation. Dans votre CODE JAVA, les
+# identifiants viennent de l'ENVIRONNEMENT, jamais d'un littéral ni d'un fichier versionné.
+# C'est un point de la grille d'évaluation dès le TP 01.
+
+services:
+  db:
+    image: mariadb:12.3            # LTS courante (12.3.x) — support jusqu'en 2029
+    container_name: data-access-db
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: compta
+      MARIADB_USER: app           # compte applicatif : c'est CELUI-LÀ que le code utilise
+      MARIADB_PASSWORD: app
+    ports:
+      - "${DB_PORT:-3306}:3306"   # surchargeable si 3306 est déjà pris (XAMPP, WSL, autre MySQL…)
+    volumes:
+      - dbdata:/var/lib/mysql
+      # Tout fichier .sql déposé ici est exécuté AU PREMIER DÉMARRAGE seulement,
+      # dans l'ordre alphabétique. Il faut `down -v` pour qu'il soit rejoué.
+      - ./data:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+  adminer:
+    image: adminer:5
+    container_name: data-access-adminer
+    restart: unless-stopped
+    ports:
+      - "${ADMINER_PORT:-8080}:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  dbdata:
